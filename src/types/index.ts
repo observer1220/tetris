@@ -18,5 +18,4 @@ export interface GameState {
   score: number;
   level: number;
   isGameOver: boolean;
-  isPaused: boolean;
 }

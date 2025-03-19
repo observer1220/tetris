@@ -12,7 +12,6 @@ const initialState: GameState = {
   score: 0,
   level: 1,
   isGameOver: false,
-  isPaused: false,
 };
 
 export const useGame = () => {
@@ -20,13 +19,17 @@ export const useGame = () => {
 
   const moveLeft = useCallback(() => {
     setGameState((prev) => {
-      if (prev.isGameOver || prev.isPaused) return prev; // 如果遊戲已結束或暫停，不執行操作
+      if (prev.isGameOver) return prev; // 如果遊戲已結束或暫停，不執行操作
 
       const newPos = {
         ...prev.currentTetrimino.position,
         x: prev.currentTetrimino.position.x - 1,
       };
-      if (newPos.x >= 0) {
+
+      if (
+        newPos.x >= 0 &&
+        !willCollide(prev.grid, prev.currentTetrimino, newPos)
+      ) {
         return {
           ...prev,
           currentTetrimino: { ...prev.currentTetrimino, position: newPos },
@@ -38,7 +41,7 @@ export const useGame = () => {
 
   const moveRight = useCallback(() => {
     setGameState((prev) => {
-      if (prev.isGameOver || prev.isPaused) return prev; // 如果遊戲已結束或暫停，不執行操作
+      if (prev.isGameOver) return prev; // 如果遊戲已結束或暫停，不執行操作
 
       const newPos = {
         ...prev.currentTetrimino.position,
@@ -63,7 +66,7 @@ export const useGame = () => {
 
   const drop = useCallback(() => {
     setGameState((prev) => {
-      if (prev.isGameOver || prev.isPaused) return prev; // 如果遊戲已結束或暫停，不執行操作
+      if (prev.isGameOver) return prev; // 如果遊戲已結束或暫停，不執行操作
 
       const newPos = {
         ...prev.currentTetrimino.position,
@@ -92,7 +95,7 @@ export const useGame = () => {
 
     // 檢查是否有滿行
     setGameState((prev) => {
-      if (prev.isGameOver || prev.isPaused) return prev; // 如果遊戲已結束或暫停，不執行操作
+      if (prev.isGameOver) return prev; // 如果遊戲已結束或暫停，不執行操作
 
       const newGrid = prev.grid.filter((row) => row.some((cell) => !cell));
       const emptyRows = GRID_HEIGHT - newGrid.length;
@@ -111,8 +114,6 @@ export const useGame = () => {
 
     // 檢查遊戲是否結束
     setGameState((prev) => {
-      if (prev.isPaused) return prev; // 如果遊戲暫停，不執行操作
-
       if (
         willCollide(
           prev.grid,
@@ -129,7 +130,7 @@ export const useGame = () => {
 
     // 更新等級
     setGameState((prev) => {
-      if (prev.isGameOver || prev.isPaused) return prev; // 如果遊戲已結束或暫停，不執行操作
+      if (prev.isGameOver) return prev; // 如果遊戲已結束或暫停，不執行操作
 
       // 每 100 分升級一次
       const newLevel = Math.floor(prev.score / 100) + 1;
@@ -190,7 +191,7 @@ export const useGame = () => {
 
   const rotateTetrimino = () => {
     setGameState((prev) => {
-      if (prev.isGameOver || prev.isPaused) return prev; // 如果遊戲已結束或暫停，不執行操作
+      if (prev.isGameOver) return prev; // 如果遊戲已結束或暫停，不執行操作
 
       const current = prev.currentTetrimino;
       const newRotation = (current.rotation + 1) % 4; // 順時針旋轉
@@ -210,7 +211,7 @@ export const useGame = () => {
   // 方塊快速落下至底部並固定
   const plummet = () => {
     setGameState((prev) => {
-      if (prev.isGameOver || prev.isPaused) return prev; // 如果遊戲已結束或暫停，不執行操作
+      if (prev.isGameOver) return prev; // 如果遊戲已結束或暫停，不執行操作
 
       let newPos = { ...prev.currentTetrimino.position };
       while (!willCollide(prev.grid, prev.currentTetrimino, newPos)) {
@@ -224,53 +225,21 @@ export const useGame = () => {
     });
   };
 
-  // 修復 togglePause
-  const togglePause = () => {
-    setGameState((prev) => ({ ...prev, isPaused: !prev.isPaused }));
-    console.log("狀態", gameState.isPaused);
-  };
-
-  // 修復 restartGame
-  const restartGame = useCallback(() => {
-    console.log("重新開始遊戲");
-    const newTetrimino = generateNewTetrimino();
-    setGameState((prev) => ({
-      grid: Array.from({ length: GRID_HEIGHT }, () =>
-        Array(GRID_WIDTH).fill(0)
-      ),
-      currentTetrimino: newTetrimino,
-      nextTetrimino: generateNewTetrimino().type,
-      score: 0,
-      level: 1,
-      isGameOver: false,
-      isPaused: false,
-    }));
-  }, []);
-
-  const startGame = useCallback(() => {
-    // console.log("開始遊戲");
-    // restartGame();
-  }, []);
+  const startGame = () => {};
 
   useEffect(() => {
-    if (gameState.isPaused || gameState.isGameOver) return;
+    if (gameState.isGameOver) return;
 
+    console.log("計時器啟動");
     const timer = setInterval(() => {
-      console.log("狀態", gameState.isPaused);
-
       drop();
     }, 1000 / gameState.level);
 
     return () => {
+      console.log("計時器清除");
       clearInterval(timer);
     };
-  }, [
-    gameState.level,
-    gameState.isGameOver,
-    gameState.isPaused,
-    drop,
-    gameState.nextTetrimino,
-  ]);
+  }, [gameState.level, gameState.isGameOver, drop]);
 
   return {
     gameState,
@@ -279,8 +248,6 @@ export const useGame = () => {
     drop,
     rotateTetrimino,
     plummet,
-    togglePause,
-    restartGame,
     startGame,
   };
 };

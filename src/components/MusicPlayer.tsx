@@ -26,7 +26,7 @@ const MusicPlayer = () => {
   };
 
   return (
-    <div style={{ marginTop: "20px" }}>
+    <div>
       <audio ref={audioRef} loop>
         <source src={tetrisMusic} type="audio/mpeg" />
       </audio>

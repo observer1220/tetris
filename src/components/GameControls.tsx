@@ -1,16 +1,21 @@
-import React, { useState } from "react";
+import React from "react";
 import { useGame } from "../hooks/useGame";
+import MusicPlayer from "./MusicPlayer";
 
 const GameControls: React.FC = () => {
-  const { gameState, togglePause, restartGame, startGame } = useGame();
+  const { startGame } = useGame();
 
   return (
-    <div>
+    <div
+      style={{
+        gap: "5px",
+        display: "flex",
+        justifyContent: "center",
+        marginTop: "10px",
+      }}
+    >
       <button onClick={startGame}>開始遊戲</button>
-      <button onClick={togglePause}>
-        {gameState.isPaused ? "繼續" : "暫停"}
-      </button>
-      <button onClick={restartGame}>重新開始</button>
+      <MusicPlayer />
     </div>
   );
 };

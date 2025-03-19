@@ -5,7 +5,6 @@ import Score from "./components/Score";
 import Level from "./components/Level";
 import NextTetrimino from "./components/NextTetrimino";
 import GameControls from "./components/GameControls";
-import MusicPlayer from "./components/MusicPlayer";
 
 const App: React.FC = () => {
   const gameRef = useRef<HTMLDivElement>(null);
@@ -58,7 +57,6 @@ const App: React.FC = () => {
           <GameControls />
         </div>
       </div>
-      <MusicPlayer />
     </div>
   );
 };
